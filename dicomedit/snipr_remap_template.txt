@@ -1,0 +1,34 @@
+// Remap dates and patient id according to a lookup file
+
+
+version "6.6"
+
+DATE_INC := #DATE_INC#
+
+(0010,0020) := "#PATIENT_ID#"
+(0010,0010) := "#PATIENT_NAME#"
+(0008,0050) := "#ACCESSION_NUMBER#"
+(0008,103E) := "#SERIES_DESCRIPTION#"
+
+if(isPresent[(0008,0012)]){ (0008,0012) := shiftDateByIncrement[ (0008,0012), DATE_INC] }// Increment 00080012
+if(isPresent[(0008,0020)]){ (0008,0020) := shiftDateByIncrement[ (0008,0020), DATE_INC] }// Increment 00080020
+if(isPresent[(0008,0021)]){ (0008,0021) := shiftDateByIncrement[ (0008,0021), DATE_INC] }// Increment 00080021
+if(isPresent[(0008,0022)]){ (0008,0022) := shiftDateByIncrement[ (0008,0022), DATE_INC] }// Increment 00080022
+if(isPresent[(0008,0023)]){ (0008,0023) := shiftDateByIncrement[ (0008,0023), DATE_INC] }// Increment 00080023
+if(isPresent[(0008,0024)]){ (0008,0024) := shiftDateByIncrement[ (0008,0024), DATE_INC] }// Increment 00080024
+if(isPresent[(0008,0025)]){ (0008,0025) := shiftDateByIncrement[ (0008,0025), DATE_INC] }// Increment 00080025
+if(isPresent[(0008,002a)]){ (0008,002a) := shiftDateByIncrement[ (0008,002a), DATE_INC] }// Increment 0008002a
+if(isPresent[(0010,21d0)]){ (0010,21d0) := shiftDateByIncrement[ (0010,21d0), DATE_INC] }// Increment 001021d0
+if(isPresent[(0018,1012)]){ (0018,1012) := shiftDateByIncrement[ (0018,1012), DATE_INC] }// Increment 00181012
+if(isPresent[(0018,1079)]){ (0018,1079) := shiftDateByIncrement[ (0018,1079), DATE_INC] }// Increment 00181079
+if(isPresent[(0018,1200)]){ (0018,1200) := shiftDateByIncrement[ (0018,1200), DATE_INC] }// Increment 00181200
+if(isPresent[(0018,700c)]){ (0018,700c) := shiftDateByIncrement[ (0018,700c), DATE_INC] }// Increment 0018700c
+if(isPresent[(0032,1000)]){ (0032,1000) := shiftDateByIncrement[ (0032,1000), DATE_INC] }// Increment 00321000
+if(isPresent[(0032,1040)]){ (0032,1040) := shiftDateByIncrement[ (0032,1040), DATE_INC] }// Increment 00321040
+if(isPresent[(0032,1050)]){ (0032,1050) := shiftDateByIncrement[ (0032,1050), DATE_INC] }// Increment 00321050
+if(isPresent[(0038,0020)]){ (0038,0020) := shiftDateByIncrement[ (0038,0020), DATE_INC] }// Increment 00380020
+if(isPresent[(0040,0002)]){ (0040,0002) := shiftDateByIncrement[ (0040,0002), DATE_INC] }// Increment 00400002
+if(isPresent[(0040,0004)]){ (0040,0004) := shiftDateByIncrement[ (0040,0004), DATE_INC] }// Increment 00400004
+if(isPresent[(0040,0244)]){ (0040,0244) := shiftDateByIncrement[ (0040,0244), DATE_INC] }// Increment 00400244
+if(isPresent[(0040,0250)]){ (0040,0250) := shiftDateByIncrement[ (0040,0250), DATE_INC] }// Increment 00400250
+if(isPresent[(3006,0008)]){ (3006,0008) := shiftDateByIncrement[ (3006,0008), DATE_INC] }// Increment 30060008
