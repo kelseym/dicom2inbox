@@ -1,5 +1,6 @@
 import requests
 
+
 class XNAT:
     def __init__(self, base_url, username, password):
         self.base_url = base_url
@@ -36,7 +37,7 @@ class XNAT:
     def close(self):
         self.session.close()
 
-    #~ DICOM Inbox methods
+    # ~ DICOM Inbox methods
     def post_to_inbox(self, project_id, subject_id, expt_label, inbox_path):
         params = {
             'import-handler': 'inbox',

@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 
+
 class RefacePathCSV:
     def __init__(self, file_path):
         self.df = pd.read_csv(file_path)
@@ -22,7 +23,6 @@ class RefacePathCSV:
                 return self.get_row(self.index - 1)
         return None
 
-
     def reset(self):
         self.index = 0
 
@@ -37,7 +37,7 @@ class RefacePathCSV:
                 'iCDKP_session': row['iCDKP_session'],
                 'days_shifted': row['days_shifted'],
                 'scan': row['scan'],
-                'Series Description' : row['Series Description'],
+                'Series Description': row['Series Description'],
                 'Image_Session_Id': row['Image Session ID'],
                 'Refaced_DICOM_URI': os.path.dirname(row['Refaced DICOM URI']),
                 'use_tilt': self._use_tilt(row)
