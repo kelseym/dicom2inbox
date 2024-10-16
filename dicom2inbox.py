@@ -5,6 +5,7 @@ import sys
 import os
 import threading
 import re
+import time
 
 from DicomEdit import DicomEdit
 from JobStatus import JobStatus
@@ -16,14 +17,16 @@ lock = threading.Lock()
 
 def monitor_jobs():
     while True:
-        if all(job['status'] == 'Complete' for job in job_progress):
-            logging.debug("All jobs complete")
-            break
+        time.sleep(5)
+        if all(status in ['Complete', 'Failed'] for status in [job.status for job in job_progress.values()]):
+            logging.debug("All jobs finished")
+            if any(job.status == 'Failed' for job in job_progress.values()):
+                logging.error("One or more jobs failed.")
         else:
             print ("Job Progress:")
-            for job in job_progress:
-                print (job['status'])
-            threading.Event().wait(5)
+            for job in job_progress.values():
+                logging.debug(job.job_id + " status: " + job.status + " DicomEdit: " + job.dicom_edit_status + " DicomInbox: " + job.dicom_inbox_status)
+
 
 def main():
     parser = argparse.ArgumentParser(description='Trasnfer data to from a file system to XNAT via DICOM Inbox.\nOptionally run data through DicomEdit.')
@@ -118,12 +121,16 @@ def main():
                 )
             except Exception as e:
                 with lock:
-                    job_progress[job_id].dicom_inbox_status = f"Error: {e}"
-
+                    job_progress[job_id].dicom_edit_status = f"Error: {e}"
+                    job_progress[job_id].status = 'Failed'
+                    continue
             # Check that job directory contains .dcm files
             if not glob.glob(os.path.join(local_inbox_target, '*.dcm')):
-                logging.error(f"No .dcm files found in {local_inbox_target}")
-                raise Exception(f"No .dcm files found in {local_inbox_target}")
+                with lock:
+                    logging.error(f"No .dcm files found in {local_inbox_target}")
+                    job_progress[job_id].dicom_edit_status = f"No .dcm files found in {local_inbox_target}"
+                    job_progress[job_id].status = 'Failed'
+                    continue
             else:
                 with lock:
                     job_progress[job_id].dicom_edit_status = 'Complete'
@@ -144,8 +151,8 @@ def main():
                 logging.error(f"Failed to post {xnat_inbox_target} to XNAT DICOM Inbox")
                 logging.error(f"Response: {response.status_code}\n{parse_error_response(response)}")
                 job_progress[job_id].dicom_inbox_status = f"Error: {parse_error_response(response)}"
-
-
+                job_progress[job_id].status = 'Failed'
+                continue
 
     except StopIteration:
         logging.error("Exception raised when processing CSV rows")
@@ -162,7 +169,7 @@ def parse_error_response(response):
 
 if __name__ == '__main__':
     monitor_thread = threading.Thread(target=monitor_jobs)
-    monitor_thread.daemon = True
+    monitor_thread.daemon = False
     monitor_thread.start()
     main()
 
