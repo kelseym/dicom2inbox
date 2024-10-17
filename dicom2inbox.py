@@ -19,10 +19,11 @@ lock = threading.Lock()
 def monitor_jobs():
     while True:
         time.sleep(5)
-        if all(status in ['Complete', 'Failed'] for status in [job.status for job in job_progress.values()]):
+        if all(JobStatus.is_terminal(status) for status in [job.status for job in job_progress.values()]):
             logging.debug("All jobs finished")
             if any(job.status == 'Failed' for job in job_progress.values()):
                 logging.error("One or more jobs failed.")
+            sys.exit(0)
         else:
             print("Job Progress:")
             for job in job_progress.values():
@@ -44,7 +45,13 @@ def main():
     parser.add_argument('-c', '--reface_csv', required=True,
                         help='Path to Reface CSV file containing paths to refaced DICOM files')
     parser.add_argument('-r', '--remap_script_template', required=True, help='DicomEdit remap script')
+    parser.add_argument('-o', '--output', required=False, help='Path to output report csv file. Default is stdout')
+    parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose logging')
+
     args = parser.parse_args()
+
+    if args.verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
 
     if not args.password:
         args.password = input(f"Enter password for {args.user}: ")
@@ -174,6 +181,17 @@ def main():
 
     except StopIteration:
         logging.error("Exception raised when processing CSV rows")
+
+    # ~ Create job report
+    if args.output:
+        with open(args.output, 'w') as f:
+            f.write(JobStatus.header() + '\n')
+            for job in job_progress.values():
+                f.write(job.csv() + '\n')
+    else:
+        print(JobStatus.header())
+        for job in job_progress.values():
+            print(job.csv())
 
     xnat.close()
 
