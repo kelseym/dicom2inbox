@@ -67,7 +67,7 @@ def main():
                         help='Use to translate local paths to xnat container paths. e.g. /Users/Kelsey/Projects/XNAT/xnat-docker-compose/xnat-data:/data/xnat')
     parser.add_argument('-c', '--reface_csv', required=True,
                         help='Path to Reface CSV file containing paths to refaced DICOM files')
-    parser.add_argument('-r', '--remap_script_template', required=True, help='DicomEdit remap script')
+    parser.add_argument('-r', '--remap_script_template', required=False, default='./dicomedit/snipr_remap_template.txt', help='DicomEdit remap script')
     parser.add_argument('-o', '--output', required=False, help='Path to output report csv file. Default is stdout')
     parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose logging')
 
