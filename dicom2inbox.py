@@ -164,7 +164,7 @@ def main():
                     continue
 
             # ~ Remove PHI from file names
-            new_file_name_pattern = row['iCDKP_session']
+            new_file_name_pattern = f"{row['iCDKP_session']}_{row['iCDKP_scan']}"
             try:
                 rename_files(local_inbox_target, new_file_name_pattern)
             except Exception as e:
