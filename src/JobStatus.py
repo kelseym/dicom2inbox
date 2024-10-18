@@ -9,6 +9,7 @@ class JobStatus:
         self.dicom_edit_status = ''
         self.dicom_inbox_id = ''
         self.dicom_inbox_status = ''
+        self.printed = False
 
     @staticmethod
     def header():

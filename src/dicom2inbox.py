@@ -14,13 +14,15 @@ from XNAT import XNAT
 
 job_progress = {}
 lock = threading.Lock()
-global xnat
 
 
-def monitor_jobs():
+def monitor_jobs(xnat, report_file=None):
     while True:
         time.sleep(5)
-        if all(JobStatus.is_terminal(status) for status in [job.status for job in job_progress.values()]):
+        # if job_progress is empty, exit
+        if not job_progress:
+            continue
+        elif all(JobStatus.is_terminal(status) for status in [job.status for job in job_progress.values()]):
             logging.debug("All jobs finished")
             if any(job.status == 'Failed' for job in job_progress.values()):
                 logging.error("One or more jobs failed.")
@@ -28,18 +30,28 @@ def monitor_jobs():
         else:
             # ~ Check dicom edit status
             for job in job_progress.values():
-                if job.dicom_edit_status == 'Posted' and xnat:
+                if job.dicom_inbox_status == 'Posted' and xnat:
                     logging.debug(f"Checking status of {job.job_id}")
                     session_inbox_status = xnat.get_inbox_session_status(job.dicom_inbox_id)
-                    job.dicom_edit_status = session_inbox_status
-                    if 'Failed' in session_inbox_status:
+                    job.dicom_inbox_status = session_inbox_status if session_inbox_status else job.dicom_inbox_status
+                    if session_inbox_status and 'Failed' in session_inbox_status:
                         job.status = 'Failed'
-                    elif 'Completed' in session_inbox_status:
+                    elif session_inbox_status and 'Completed' in session_inbox_status:
                         job.status = 'Completed'
-            print("Job Progress:")
-            for job in job_progress.values():
-                print(
-                    job.job_id + " status: " + job.status + " DicomEdit: " + job.dicom_edit_status + " DicomInbox: " + job.dicom_inbox_status)
+            update_report(report_file)
+
+def update_report(report_file):
+    # ~ Create job report
+    if report_file:
+        with open(report_file, 'a') as f:
+            if os.path.getsize(report_file) == 0:
+                f.write(JobStatus.header() + '\n')
+            # for each JobStatus item that is not printed, write to file
+            with lock:
+                for job in job_progress.values():
+                    if JobStatus.is_terminal(job.status) and not job.printed:
+                        job.printed = True
+                        f.write(job.csv() + '\n')
 
 
 def main():
@@ -79,7 +91,7 @@ def main():
             return
         local_inbox_path = xnat_inbox_path.replace(xnat_path, local_path)
 
-    global xnat
+
     xnat = XNAT(base_url=args.url, username=args.user, password=args.password)
 
     dicom_edit = DicomEdit(remap_script_template=args.remap_script_template)
@@ -95,6 +107,10 @@ def main():
     if all_row_count != len(reface_csv.get_all_rows()['concat_id'].unique()):
         logging.error("concat_id values are not unique")
         raise Exception("concat_id values are not unique")
+
+    # ~ Start job monitor thread
+    threading.Thread(target=monitor_jobs, args=(xnat, args.output)).start()
+
 
     try:
         while True:
@@ -173,6 +189,9 @@ def main():
                     job_progress[job_id].status = 'Failed'
                     continue
 
+            job_progress[job_id].dicom_edit_status = 'Completed'
+
+
             # ~ Post to XNAT DICOM Inbox
             logging.debug(f"Posting {xnat_inbox_target} to XNAT DICOM Inbox")
             response = xnat.post_to_inbox(
@@ -184,7 +203,7 @@ def main():
             if response.status_code == 200:
                 with lock:
                     job_progress[job_id].dicom_inbox_status = 'Posted'
-                    job_progress[job_id].dicom_inbox_id = response.text
+                    job_progress[job_id].dicom_inbox_id = response.text.replace('\n', '').replace('\r', '')
                     job_progress[job_id].status = 'Posted'
             else:
                 logging.error(f"Failed to post {xnat_inbox_target} to XNAT DICOM Inbox")
@@ -195,17 +214,6 @@ def main():
 
     except StopIteration:
         logging.error("Exception raised when processing CSV rows")
-
-    # ~ Create job report
-    if args.output:
-        with open(args.output, 'w') as f:
-            f.write(JobStatus.header() + '\n')
-            for job in job_progress.values():
-                f.write(job.csv() + '\n')
-    else:
-        print(JobStatus.header())
-        for job in job_progress.values():
-            print(job.csv())
 
     xnat.close()
 
@@ -238,9 +246,6 @@ def sanitize_filename(filename):
 
 
 if __name__ == '__main__':
-    monitor_thread = threading.Thread(target=monitor_jobs)
-    monitor_thread.daemon = False
-    monitor_thread.start()
     main()
 
 # Configure logging to output to stdout

@@ -43,10 +43,12 @@ class XNAT:
         url = f"{self.base_url}/{inbox_id}"
         response = self.session.get(url)
         if response:
-            data = json.load(response)
-            status = data.get('status')
-            resolution = data.get('resolution')
-            return f'{status} : {resolution}'
+            try:
+                status = response.json().get('status')
+                resolution = response.json().get('resolution')
+                return f'{status} : {resolution}'
+            except json.JSONDecodeError:
+                return 'Failed : JSON decode error'
 
 
 
