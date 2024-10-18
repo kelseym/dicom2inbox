@@ -1,3 +1,5 @@
+import json
+
 import requests
 
 
@@ -22,18 +24,6 @@ class XNAT:
     def get_session(self):
         return self.session
 
-    def get(self, endpoint):
-        url = f"{self.base_url}/{endpoint}"
-        response = self.session.get(url)
-        response.raise_for_status()
-        return response.json()
-
-    def post(self, endpoint, data):
-        url = f"{self.base_url}/{endpoint}"
-        response = self.session.post(url, json=data)
-        response.raise_for_status()
-        return response.json()
-
     def close(self):
         self.session.close()
 
@@ -48,3 +38,16 @@ class XNAT:
             'path': inbox_path
         }
         return self.session.post(self.inbox_url, params=params)
+
+    def get_inbox_session_status(self, inbox_id):
+        url = f"{self.base_url}/{inbox_id}"
+        response = self.session.get(url)
+        if response:
+            data = json.load(response)
+            status = data.get('status')
+            resolution = data.get('resolution')
+            return f'{status} : {resolution}'
+
+
+
+

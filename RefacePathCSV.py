@@ -35,6 +35,7 @@ class RefacePathCSV:
                 'SNIPR_session': row['SNIPR_session'],
                 'iCDKP_subject': row['iCDKP_subject'],
                 'iCDKP_session': row['iCDKP_session'],
+                'iCDKP_scan': row['iCDKP_scan'],
                 'days_shifted': row['days_shifted'],
                 'scan': row['scan'],
                 'Series Description': row['Series Description'],

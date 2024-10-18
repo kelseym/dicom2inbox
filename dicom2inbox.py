@@ -14,6 +14,7 @@ from XNAT import XNAT
 
 job_progress = {}
 lock = threading.Lock()
+global xnat
 
 
 def monitor_jobs():
@@ -25,9 +26,19 @@ def monitor_jobs():
                 logging.error("One or more jobs failed.")
             sys.exit(0)
         else:
+            # ~ Check dicom edit status
+            for job in job_progress.values():
+                if job.dicom_edit_status == 'Posted' and xnat:
+                    logging.debug(f"Checking status of {job.job_id}")
+                    session_inbox_status = xnat.get_inbox_session_status(job.dicom_inbox_id)
+                    job.dicom_edit_status = session_inbox_status
+                    if 'Failed' in session_inbox_status:
+                        job.status = 'Failed'
+                    elif 'Completed' in session_inbox_status:
+                        job.status = 'Completed'
             print("Job Progress:")
             for job in job_progress.values():
-                logging.debug(
+                print(
                     job.job_id + " status: " + job.status + " DicomEdit: " + job.dicom_edit_status + " DicomInbox: " + job.dicom_inbox_status)
 
 
@@ -68,6 +79,7 @@ def main():
             return
         local_inbox_path = xnat_inbox_path.replace(xnat_path, local_path)
 
+    global xnat
     xnat = XNAT(base_url=args.url, username=args.user, password=args.password)
 
     dicom_edit = DicomEdit(remap_script_template=args.remap_script_template)
@@ -129,6 +141,7 @@ def main():
                     patient_id=row['iCDKP_subject'],
                     patient_name=row['iCDKP_subject'],
                     session_label=row['iCDKP_session'],
+                    scan=row['iCDKP_scan'],
                     series_description=row['Series Description'],
                     use_tilt=row['use_tilt']
                 )
@@ -172,6 +185,7 @@ def main():
                 with lock:
                     job_progress[job_id].dicom_inbox_status = 'Posted'
                     job_progress[job_id].dicom_inbox_id = response.text
+                    job_progress[job_id].status = 'Posted'
             else:
                 logging.error(f"Failed to post {xnat_inbox_target} to XNAT DICOM Inbox")
                 logging.error(f"Response: {response.status_code}\n{parse_error_response(response)}")

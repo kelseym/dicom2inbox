@@ -9,14 +9,14 @@ class DicomEdit:
         self.jar_path = jar_path
         self.remap_script_template = remap_script_template
 
-    def remap(self, src_dir, dest_dir, date_inc, patient_id, patient_name, session_label, series_description, use_tilt=False):
+    def remap(self, src_dir, dest_dir, date_inc, patient_id, patient_name, session_label, scan, series_description, use_tilt=False):
         if self.remap_script_template is None:
             raise Exception("No remap script template provided")
         with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_script = self.populate_remap_script(tmp_dir, date_inc, patient_id, patient_name, session_label, series_description)
+            tmp_script = self.populate_remap_script(tmp_dir, date_inc, patient_id, patient_name, session_label, scan, series_description)
             self.run_on_dir(tmp_script, src_dir, dest_dir, use_tilt)
 
-    def populate_remap_script(self, tmp_dir, data_inc, patient_id, patient_name, session_label, series_description):
+    def populate_remap_script(self, tmp_dir, data_inc, patient_id, patient_name, session_label, scan, series_description):
         if self.remap_script_template is None:
             raise Exception("No remap script template provided")
         # create a temporary file to hold the remap script
@@ -26,6 +26,7 @@ class DicomEdit:
             '#PATIENT_ID#': str(patient_id),
             '#PATIENT_NAME#': str(patient_name),
             '#ACCESSION_NUMBER#': str(session_label),
+            '#SERIES_NUMBER#': str(scan),
             '#SERIES_DESCRIPTION#': str(series_description)
         }
         self.replace_patterns_in_file(self.remap_script_template, tmp_script_path, replacements)
