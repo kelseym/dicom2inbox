@@ -1,4 +1,5 @@
 import argparse
+import getpass
 import glob
 import logging
 import sys
@@ -77,7 +78,7 @@ def main():
         logging.getLogger().setLevel(logging.DEBUG)
 
     if not args.password:
-        args.password = input(f"Enter password for {args.user}: ")
+        args.password = getpass.getpass(prompt='Enter XNAT password: ')
 
     if not args.remap_script_template:
         logging.warning("No remap script template provided. Will not run data through DicomEdit.")
