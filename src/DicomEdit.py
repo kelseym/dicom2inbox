@@ -27,6 +27,8 @@ class DicomEdit:
             '#PATIENT_NAME#': str(patient_name),
             '#ACCESSION_NUMBER#': str(session_label),
             '#SERIES_NUMBER#': str(scan),
+            '#ACQUISITION_NUMBER#': str(scan),
+            "#INSTANCE_NUMBER#": str(scan),
             '#SERIES_DESCRIPTION#': str(series_description)
         }
         self.replace_patterns_in_file(self.remap_script_template, tmp_script_path, replacements)

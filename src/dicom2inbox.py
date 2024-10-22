@@ -27,6 +27,9 @@ def monitor_jobs(xnat, report_file=None):
             logging.debug("All jobs finished")
             if any(job.status == 'Failed' for job in job_progress.values()):
                 logging.error("One or more jobs failed.")
+                for job in job_progress.values():
+                    if job.status == 'Failed':
+                        logging.error(f"Job {job.job_id} failed: {job.csv()}")
             sys.exit(0)
         else:
             # ~ Check dicom edit status
