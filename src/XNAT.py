@@ -34,7 +34,6 @@ class XNAT:
             'cleanupAfterImport': 'true',
             'PROJECT_ID': project_id,
             'SUBJECT_ID': subject_id,
-            'EXPT_LABEL': expt_label,
             'path': inbox_path
         }
         return self.session.post(self.inbox_url, params=params)

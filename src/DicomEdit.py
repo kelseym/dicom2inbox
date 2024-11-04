@@ -25,7 +25,7 @@ class DicomEdit:
             '#DATE_INC#': str(data_inc),
             '#PATIENT_ID#': str(patient_id),
             '#PATIENT_NAME#': str(patient_name),
-            '#ACCESSION_NUMBER#': str(session_label),
+            '#SESSION_LABEL#': str(session_label),
             '#SERIES_NUMBER#': str(scan),
             '#ACQUISITION_NUMBER#': str(scan),
             "#INSTANCE_NUMBER#": str(scan),
