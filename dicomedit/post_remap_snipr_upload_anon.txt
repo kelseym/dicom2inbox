@@ -6,7 +6,7 @@ version "6.3"
 
 // ** Manual edits ** //
 
-* / (0010,0010) := ""     // Remove patient name from everywhere
+// (0010,0010) := ""     // Remove patient name from everywhere
 -(0008,0050)    // Remove accession number
 -(0018,1000) // Remove Device Serial Number
 
@@ -73,10 +73,7 @@ UIDROOT := "1.3.6.1.4.1.14519.5.2.1.9999.9999"
 -(0010,21f0)     // remove 001021f0
 -(0010,2297)     // remove 00102297
 -(0010,2299)     // remove 00102299
-//
-// 0010,4000 (Patient Comments Attribute) May be used to store new XNAT session in remap. If so, do not remove.
-//-(0010,4000)     // remove 00104000
-//
+-(0010,4000)     // remove 00104000
 -(0018,0010)     // remove 00180010
 -(0018,1030)     // remove 00181030
 -(0018,1400)     // remove 00181400

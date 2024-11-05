@@ -26,7 +26,7 @@ The following arguments are required: -u/--user, --url, --project, -r/--remap_sc
 ** Each XNAT scan resource of interest is specified by a row in a csv file (e.g. SNIPR_reface_paths.csv) with the following required columns:
 * 'QC_result' : Pass|Fail. Only 'Pass' rows will be processed
 * 'concat_id' : Unique identifier for each source scan row in the CSV
-* 'Refaced_DICOM_URI' : Full file path to the catalog file under a resource of interest
+* 'Refaced DICOM URI' : Full file path to the catalog file under a resource of interest
 * 'days_shifted' : Number of days to shift the session date on transfer
 * 'iCDKP_subject' : iCDKP subject label. Used for patient name and patient ID in anonymization
 * 'iCDKP_session' : iCDKP session label. Used for accession number in anonymization

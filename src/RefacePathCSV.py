@@ -15,6 +15,14 @@ class RefacePathCSV:
         else:
             raise StopIteration("End of CSV file reached")
 
+    def get_unique_sessions(self):
+        get_passing_rows = self.get_passing_rows()
+        return get_passing_rows['iCDKP_session'].unique()
+
+    def get_scan_rows(self, session):
+        matching_rows = self.df[self.df['iCDKP_session'] == session]
+        return [self.get_row(index) for index in matching_rows.index]
+
     def next_passing_row(self):
         while self.index < len(self.df):
             qc_result = self.df.iloc[self.index]['QC_result']
@@ -37,8 +45,8 @@ class RefacePathCSV:
                 'days_shifted': row['days_shifted'],
                 'Series Description': row['Series Description'],
                 'Image_Session_Id': row['Image Session ID'],
-                'Refaced_DICOM_URI': os.path.dirname(row['Refaced DICOM URI']),
-                'use_tilt': self._use_tilt(row)
+                'Refaced DICOM URI': os.path.dirname(row['Refaced DICOM URI']) if os.path.isfile(row['Refaced DICOM URI']) else row['Refaced DICOM URI'],
+                'use_tilt_deface': self._use_tilt(row)
             }
         else:
             raise IndexError("Index out of range")
@@ -48,6 +56,9 @@ class RefacePathCSV:
 
     def get_all_row_count(self):
         return self.df.shape[0]
+
+    def get_passing_rows(self):
+        return self.df[self.df['QC_result'].str.lower() == 'pass']
 
     def get_matching_row_count(self, column_name, value):
         return len(self.df[self.df[column_name].str.lower() == value.lower()])
