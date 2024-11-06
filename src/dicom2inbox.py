@@ -55,11 +55,11 @@ def update_report(report_file):
                 if os.path.getsize(report_file) == 0:
                     f.write(JobStatus.header() + '\n')
                     # for each JobStatus item that is not printed, write to file
-                    with lock:
-                        for job in job_progress.values():
-                            if JobStatus.is_terminal(job.status) and not job.printed:
+                    for job in job_progress.values():
+                        if JobStatus.is_terminal(job.status) and not job.printed:
+                            with lock:
                                 job.printed = True
-                                f.write(job.csv() + '\n')
+                            f.write(job.csv() + '\n')
 
 
 def main():
@@ -164,7 +164,7 @@ def main():
                 with lock:
                     job_progress[job_id].dicom_edit_status = f"Error: {e}"
                     job_progress[job_id].status = 'Failed'
-                    continue
+                continue
 
             job_progress[job_id].dicom_edit_status = 'Completed'
 
@@ -216,13 +216,13 @@ def remap_scan_row_files(scan_rows, dicom_edit, local_inbox_target, job_id):
         inbox_file_count = count_dcm_files(scan_dest_dir)
         source_file_count = count_dcm_files(row['Refaced DICOM URI'])
         if inbox_file_count == 0 or source_file_count == 0:
+            logging.error(
+                f"Invalid file count: {inbox_file_count} in {scan_dest_dir}, {source_file_count} in {row['Refaced DICOM URI']}")
             with lock:
-                logging.error(
-                    f"Invalid file count: {inbox_file_count} in {scan_dest_dir}, {source_file_count} in {row['Refaced DICOM URI']}")
                 job_progress[
                     job_id].dicom_edit_status = f"Invalid: {inbox_file_count} in {scan_dest_dir}, {source_file_count} in {row['Refaced DICOM URI']}"
                 job_progress[job_id].status = 'Failed'
-                continue
+            continue
 
         # ~ Remove PHI from file names
         new_file_name_pattern = f"{row['iCDKP_session']}_{row['iCDKP_scan']}"
@@ -232,7 +232,7 @@ def remap_scan_row_files(scan_rows, dicom_edit, local_inbox_target, job_id):
             with lock:
                 job_progress[job_id].dicom_edit_status = f"Error: {e}"
                 job_progress[job_id].status = 'Failed'
-                continue
+            continue
 
 
 def parse_error_response(response):

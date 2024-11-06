@@ -17,7 +17,7 @@ class JobStatus:
 
     @staticmethod
     def is_terminal(status):
-        return status in ['Failed', 'Completed']
+        return status.lower() in ['failed', 'completed']
 
     def csv(self):
         return f"{self.job_id},{self.status},{self.dicom_edit_target},{self.dicom_edit_status},{self.dicom_inbox_id},{self.dicom_inbox_status}"
