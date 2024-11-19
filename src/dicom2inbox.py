@@ -136,11 +136,11 @@ def main():
             with lock:
                 job_progress[job_id] = JobStatus(job_id)
 
-            # ~ Check that all scan rows ['Refaced DICOM URI'] are directories
+            # ~ Check that all scan rows ['source_dir'] are directories
             for row in scan_rows:
-                if not os.path.isdir(os.path.dirname(row['Refaced DICOM URI'])):
-                    logging.error(f"Refaced DICOM URI is not a directory: {row['Refaced DICOM URI']}")
-                    raise Exception("{} is not a directory".format(row['Refaced DICOM URI']))
+                if not os.path.isdir(os.path.dirname(row['source_path'])):
+                    logging.error(f"source_path is not a directory: {row['source_path']}")
+                    raise Exception("{} is not a directory".format(row['source_path']))
 
             # ~ Set up the DICOM Inbox job directory
             xnat_inbox_target = os.path.join(xnat_inbox_path, args.project, job_id)
@@ -196,12 +196,12 @@ def main():
 
 def remap_scan_row_files(scan_rows, dicom_edit, local_inbox_target, job_id):
     for row in scan_rows:
-        logging.debug(f"Remapping {row['Refaced DICOM URI']} to {local_inbox_target}")
         scan_dest_dir = os.path.join(local_inbox_target, str(row['iCDKP_scan']))
+        logging.debug(f"Remapping {row['source_path']} to {local_inbox_target}")
         if not os.path.isdir(scan_dest_dir):
             os.makedirs(scan_dest_dir)
         dicom_edit.remap(
-            src_dir=row['Refaced DICOM URI'],
+            src_dir=row['source_path'],
             dest_dir=scan_dest_dir,
             date_inc=row['days_shifted'],
             patient_id=row['iCDKP_subject'],
@@ -214,13 +214,13 @@ def remap_scan_row_files(scan_rows, dicom_edit, local_inbox_target, job_id):
 
         # Check that scan directory contains correct number of .dcm files
         inbox_file_count = count_dcm_files(scan_dest_dir)
-        source_file_count = count_dcm_files(row['Refaced DICOM URI'])
+        source_file_count = count_dcm_files(row['source_path'])
         if inbox_file_count == 0 or source_file_count == 0:
             logging.error(
-                f"Invalid file count: {inbox_file_count} in {scan_dest_dir}, {source_file_count} in {row['Refaced DICOM URI']}")
+                f"Invalid file count: {inbox_file_count} in {scan_dest_dir}, {source_file_count} in {row['source_path']}")
             with lock:
                 job_progress[
-                    job_id].dicom_edit_status = f"Invalid: {inbox_file_count} in {scan_dest_dir}, {source_file_count} in {row['Refaced DICOM URI']}"
+                    job_id].dicom_edit_status = f"Invalid: {inbox_file_count} in {scan_dest_dir}, {source_file_count} in {row['source_path']}"
                 job_progress[job_id].status = 'Failed'
             continue
 

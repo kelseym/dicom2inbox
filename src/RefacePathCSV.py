@@ -45,7 +45,7 @@ class RefacePathCSV:
                 'days_shifted': row['days_shifted'],
                 'Series Description': row['Series Description'],
                 'Image_Session_Id': row['Image Session ID'],
-                'Refaced DICOM URI': os.path.dirname(row['Refaced DICOM URI']) if os.path.isfile(row['Refaced DICOM URI']) else row['Refaced DICOM URI'],
+                'source_path': row['source_path'],
                 'use_tilt_deface': self._use_tilt(row)
             }
         else:
